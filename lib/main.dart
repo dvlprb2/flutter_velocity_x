@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_velocity_x/LoginScreen.dart';
-import 'package:flutter_app_velocity_x/OnBoardingScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import 'Todo.dart';
+
 void main() {
-  runApp(MyApp());
+  runApp(VxState(store: MyStore(), child: MyApp()));
 }
 
 final TextTheme _textTheme = TextTheme(
@@ -37,6 +37,38 @@ final TextTheme _textTheme = TextTheme(
       textStyle: TextStyle(fontSize: 11, color: Color(0xff4a4c4f))),
 );
 
+class Task {
+  String title;
+  String description;
+  bool completed;
+
+  Task(this.title, this.description, this.completed);
+}
+
+class MyStore extends VxStore {
+  final List<Task> todoList = [];
+}
+
+class AddTask extends VxMutation<MyStore> {
+  final Task _task;
+
+  AddTask(this._task);
+
+  perform() => store.todoList.add(_task);
+}
+
+class MarkCompleted extends VxMutation<MyStore> {
+  final int _index;
+
+  MarkCompleted(this._index);
+
+  @override
+  perform() {
+    final _item = store.todoList[_index];
+    _item.completed = !_item.completed;
+  }
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -48,7 +80,7 @@ class MyApp extends StatelessWidget {
         textTheme: _textTheme,
         // inputDecorationTheme: _inputDecorationTheme,
       ),
-      home: OnBoardingScreen(),
+      home: Todo(),
     );
   }
 }
