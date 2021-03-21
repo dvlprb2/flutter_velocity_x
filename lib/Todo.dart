@@ -11,61 +11,53 @@ class Todo extends StatefulWidget {
 class _TodoState extends State<Todo> {
   @override
   Widget build(BuildContext context) {
-    // Define when this widget should re render
     VxState.watch(context, on: [AddTask, MarkCompleted]);
-
-    // Get access to the store
     MyStore store = VxState.store;
 
     return Scaffold(
       appBar: AppBar(
-        title: "Todo".text.make(),
+        title: "Todo".text.uppercase.make(),
         backgroundColor: Vx.coolGray900,
         brightness: Brightness.dark,
       ),
       body: store.todoList.length > 0
           ? ListView.separated(
-              itemCount: store.todoList.length,
-              separatorBuilder: (context, index) => Divider(
+        separatorBuilder: (context, index) => Divider(
                 height: 1.0,
               ),
-              padding: EdgeInsets.all(8),
+              itemCount: store.todoList.length,
+              padding: EdgeInsets.all(8.0),
               itemBuilder: (context, index) {
                 final _item = store.todoList[index];
                 return CheckboxListTile(
+                  activeColor: Vx.coolGray800,
+                  tileColor: _item.completed ? Vx.blueGray200 : null,
                   title: _item.title.text.make(),
                   subtitle: _item.description.text.make(),
                   value: _item.completed,
-                  onChanged: (bool val) => MarkCompleted(index),
-                  contentPadding: EdgeInsets.zero,
+                  onChanged: (bool value) => MarkCompleted(index),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
                 );
               },
             )
           : EmptyList(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddTodoDialog(),
+        onPressed: () => Navigator.of(context).push(MaterialPageRoute<Null>(
+            builder: (context) => AddTaskDialog(), fullscreenDialog: true)),
         child: Icon(Icons.add),
         backgroundColor: Vx.coolGray900,
       ),
     );
   }
-
-  void _openAddTodoDialog() {
-    Navigator.of(context).push(new MaterialPageRoute<Null>(
-        builder: (BuildContext context) {
-          return AddTaskDialog();
-        },
-        fullscreenDialog: true));
-  }
 }
 
-class _TaskData {
+class TaskData {
   String title, description;
   bool completed;
 }
 
 class AddTaskDialog extends StatelessWidget {
-  final _TaskData _data = new _TaskData();
+  final TaskData _data = TaskData();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -78,64 +70,63 @@ class AddTaskDialog extends StatelessWidget {
       ),
       body: Form(
         key: _formKey,
-        child: VStack(
-          [
-            TextFormField(
-              onSaved: (String value) {
-                this._data.title = value;
-              },
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Title",
-                  contentPadding: EdgeInsets.all(16.0)),
-            )
-                .box
-                .withRounded(value: 4.0)
-                .border(color: Vx.coolGray500, width: 1.0)
-                .margin(EdgeInsets.only(bottom: 12.0))
+        child: VStack([
+          TextFormField(
+            onSaved: (String value) {
+              this._data.title = value;
+            },
+            decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "Title",
+                contentPadding: EdgeInsets.all(16.0)),
+          )
+              .box
+              .withRounded(value: 4.0)
+              .border(color: Vx.coolGray500, width: 1.0)
+              .margin(EdgeInsets.only(bottom: 12.0))
+              .make(),
+          TextFormField(
+            onSaved: (String value) {
+              this._data.description = value;
+            },
+            minLines: 3,
+            maxLines: 6,
+            decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "Description",
+                contentPadding: EdgeInsets.all(16.0)),
+          )
+              .box
+              .withRounded(value: 4.0)
+              .border(color: Vx.coolGray500, width: 1.0)
+              .margin(EdgeInsets.only(bottom: 12.0))
+              .make(),
+          MaterialButton(
+            onPressed: () {
+              _formKey.currentState.save();
+              Task _task =
+                  Task(this._data.title, this._data.description, false);
+              AddTask(_task);
+              Navigator.pop(context);
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            minWidth: context.screenWidth,
+            color: Vx.coolGray900,
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: "Save"
+                .text
+                .size(16.0)
+                .uppercase
+                .center
+                .white
+                .bodyText2(context)
+                .semiBold
+                .letterSpacing(1.0)
                 .make(),
-            TextFormField(
-              onSaved: (String value) {
-                this._data.description = value;
-              },
-              minLines: 3,
-              maxLines: 6,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Description",
-                  contentPadding: EdgeInsets.all(16.0)),
-            )
-                .box
-                .withRounded(value: 4.0)
-                .border(color: Vx.coolGray500, width: 1.0)
-                .margin(EdgeInsets.only(bottom: 12.0))
-                .make(),
-            MaterialButton(
-              onPressed: () {
-                _formKey.currentState.save();
-                Task _task =
-                    Task(this._data.title, this._data.description, false);
-                AddTask(_task);
-                Navigator.pop(context);
-              },
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4.0)),
-              minWidth: context.screenWidth,
-              color: Vx.coolGray900,
-              child: "Save"
-                  .text
-                  .size(16.0)
-                  .uppercase
-                  .center
-                  .white
-                  .bodyText2(context)
-                  .semiBold
-                  .letterSpacing(1.0)
-                  .make(),
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-            ).box.make()
-          ],
-        ).box.p16.make(),
+          ).box.make()
+        ]).box.p16.make(),
       ),
     );
   }
